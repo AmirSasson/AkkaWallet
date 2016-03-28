@@ -9,16 +9,36 @@ namespace MyActorSystem.Actors
 {
     public class WalletActor : Akka.Actor.ReceiveActor
     {
-        long _ballance;
-        public WalletActor(long ballance)
+        ISeed _balance;
+        IAudit _audit;
+
+        public WalletActor(ISeed balance, IAudit audit)
         {
-            _ballance = ballance;
-            Console.WriteLine($"Actor of {nameof(WalletActor)} Created! {this.Self.Path} , {nameof(_ballance)} is {ballance}");
+            _balance = balance;
+            _audit = audit;
+
+            Console.WriteLine($"Actor of {nameof(WalletActor)} Created! {this.Self.Path} , {nameof(_balance.Amount)} is {balance.Amount}");
             Receive<Withdraw>((m) =>
-            {                
-                 _ballance -= m.Amount;
-                Console.WriteLine($"recieved a message {m.Ticket} {nameof(m.Amount)} {m.Amount}, {nameof(_ballance)} is {_ballance}");
+            {
+                _balance.Amount -= m.Amount;
+                Console.WriteLine($"recieved a message {m.Ticket} {nameof(m.Amount)} {m.Amount}, {nameof(_balance.Amount)} is {_balance.Amount}");
+                _audit.Write($"{this.Self.Path.Name} Withdraw {m.Amount}");
             });
+        }
+
+        protected override void PostStop()
+        {
+            Console.WriteLine("PostStop");
+            base.PostStop();
+        }
+        public override void AroundPostStop()
+        {
+            base.AroundPostStop();
+        }
+        protected override void PreRestart(Exception reason, object message)
+        {
+            Console.WriteLine("PreRestart");
+            base.PreRestart(reason, message);
         }
     }
 }
