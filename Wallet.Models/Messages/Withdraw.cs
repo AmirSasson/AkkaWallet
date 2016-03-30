@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MyActorSystem.Messages
+namespace Wallet.Models.Messages
 {
     public class Withdraw
     {

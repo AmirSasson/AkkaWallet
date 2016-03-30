@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Wallet.Models.Contracts;
+using Wallet.Models.Messages;
 
 namespace MyActorSystem
 {
@@ -32,11 +34,52 @@ namespace MyActorSystem
 
             Props prop = _actorSystem.DI().Props<WalletActor>();// _actorSystem.ActorOf();        
 
+            var u = _actorSystem.ActorOf(prop, $"usertokill");
+            u.Tell(new Withdraw("1", 2));
+           // u.Tell(PoisonPill.Instance);
+
+            Task.Delay(5000).Wait();
+            u.Tell(PoisonPill.Instance);
+            Task.Delay(5000).Wait();
+            //u.GracefulStop(TimeSpan.FromMinutes(1)).Wait();
+
+            u = _actorSystem.ActorOf(prop, $"usertokill");
+            Task.Delay(600).Wait();
+
             Parallel.For(1, 200, (i) =>
             {
                 IActorRef user = _actorSystem.ActorOf(prop, $"user{i}");
                 Console.WriteLine($"Actor {user.Path.Name} Created");
             });
+
+            Task.Delay(600).Wait();
+
+
+            for (int i = 1; i < 200; i++)
+            {
+                _actorSystem.ActorSelection($"akka://Wallets/user/user{i}").
+                ResolveOne(TimeSpan.FromMilliseconds(100)).
+                ContinueWith(t =>
+                {
+                    IActorRef user = null;
+                    if (t.Exception == null)
+                    {
+                        user = t.Result;
+                    }
+                    else
+                    {
+                        try
+                        {
+                            user = _actorSystem.ActorOf(prop, $"user{i}");
+                        }
+                        catch (Exception)
+                        {
+                        }
+                    }
+                    user.Tell(new Withdraw("1", 1));
+                });
+                Task.Delay(500).Wait();
+            }
 
 
             //Parallel.For(0, 20, (i) => { user1.Tell(new Messages.Withdraw(i.ToString(), 1)); });

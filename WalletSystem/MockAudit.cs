@@ -1,4 +1,5 @@
 ﻿using System;
+using Wallet.Models.Contracts;
 
 namespace MyActorSystem
 {

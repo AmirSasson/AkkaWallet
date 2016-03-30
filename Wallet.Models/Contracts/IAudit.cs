@@ -1,4 +1,4 @@
-﻿namespace MyActorSystem
+﻿namespace Wallet.Models.Contracts
 {
     public interface IAudit
     {
